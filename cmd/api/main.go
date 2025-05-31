@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"fmt"
 	"github.com/joho/godotenv"
@@ -35,12 +36,21 @@ func main() {
 	flag.Parse()
 
 	// connect to DB	// connect to DB
+	conn, err := app.connectToDB()
+
+	// If the connection is successful, assign it to the app.DB field.
+	app.DB = conn
+
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Error connecting to database: %v\n", err))
+	}
+
 	app.Domain = "example.com"
 
 	log.Printf("Starting server on port %d", port)
 
 	// Starting up; the server.
-	err := http.ListenAndServe(fmt.Sprintf(":%d", port), app.routes())
+	err = http.ListenAndServe(fmt.Sprintf(":%d", port), app.routes())
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Error starting server: %v\n", err))
 	}
