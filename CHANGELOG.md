@@ -1,6 +1,7 @@
 Next Release
 -
 
+v1.4.0
 * Docker build and run instructions
 * PostgresSQL database driver
 * PostgresSLQ database connection
