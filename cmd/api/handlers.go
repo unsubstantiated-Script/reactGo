@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"reactGo/internal/models"
+	"time"
 )
 
 func (app *application) Home(w http.ResponseWriter, r *http.Request) {
@@ -33,9 +35,38 @@ func (app *application) Home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) AllMovies(w http.ResponseWriter, r *http.Request) {
-	// This is a placeholder for the AllMovies handler
-	// In a real application, you would fetch movies from a database or another source
-	movies := []string{"Movie 1", "Movie 2", "Movie 3"}
+	var movies []models.Movie
+
+	rd, _ := time.Parse("2006-01-02", "1985-03-07")
+
+	highlander := models.Movie{
+		ID:          1,
+		Title:       "Highlander",
+		Year:        1985,
+		ReleaseDate: rd,
+		RunTime:     116,
+		MPAARating:  "R",
+		Description: "A story about immortals who can only die by beheading.",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+
+	rd, _ = time.Parse("2006-01-02", "1989-10-27")
+
+	punisher := models.Movie{
+		ID:          1,
+		Title:       "Punisher",
+		Year:        1989,
+		ReleaseDate: rd,
+		RunTime:     120,
+		MPAARating:  "R",
+		Description: "A story about a former cop who becomes a vigilante.",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+
+	movies = append(movies, highlander)
+	movies = append(movies, punisher)
 
 	// Set the content type header to application/json
 	out, err := json.Marshal(movies)
