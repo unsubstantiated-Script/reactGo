@@ -1,9 +1,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 )
 
 const port = 8080
@@ -16,9 +18,19 @@ func main() {
 	// Set app config
 	var app application
 
-	// read from  CLI
-	// connect to DB
+	// Read environment variables
+	dsn := fmt.Sprintf("host=localhost port=%s user=%s password=%s dbname=%s sslmode=disable timezone=UTC connect_timeout=5",
+		os.Getenv("PORT"),
+		os.Getenv("USERNAME"),
+		os.Getenv("PASSWORD"),
+		os.Getenv("DB_NAME"),
+	)
 
+	// read from  CLI
+	flag.StringVar(&app.DSN, "dsn", dsn, "Postgres connection string")
+	flag.Parse()
+
+	// connect to DB	// connect to DB
 	app.Domain = "example.com"
 
 	log.Printf("Starting server on port %d", port)
