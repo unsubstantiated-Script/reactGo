@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
@@ -11,18 +12,21 @@ import (
 const port = 8080
 
 type application struct {
+	DSN    string
 	Domain string
+	DB     *sql.DB
 }
 
 func main() {
 	// Set app config
 	var app application
 
+	_ = godotenv.Load(".env")
 	// Read environment variables
 	dsn := fmt.Sprintf("host=localhost port=%s user=%s password=%s dbname=%s sslmode=disable timezone=UTC connect_timeout=5",
-		os.Getenv("PORT"),
-		os.Getenv("USERNAME"),
-		os.Getenv("PASSWORD"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USERNAME"),
+		os.Getenv("DB_PASSWORD"),
 		os.Getenv("DB_NAME"),
 	)
 
