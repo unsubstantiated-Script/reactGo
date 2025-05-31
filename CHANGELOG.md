@@ -1,5 +1,8 @@
 Next Release
 -
+* GoLang Middleware for CORS
+* GoLang API first endpoint for movies
+
 1.2.0
 
 * React components for Alert, EditMovie, ErrorPage, Genres, GraphQL, Home, Login, ManageCatalogue, Movie, and Movies added
