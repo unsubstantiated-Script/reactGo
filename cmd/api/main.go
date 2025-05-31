@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"reactGo/internal/repository"
+	"reactGo/internal/repository/dbrepo"
 )
 
 const port = 8080
@@ -15,7 +17,7 @@ const port = 8080
 type application struct {
 	DSN    string
 	Domain string
-	DB     *sql.DB
+	DB     repository.DatabaseRepo
 }
 
 func main() {
@@ -42,19 +44,14 @@ func main() {
 	}
 
 	// If the connection is successful, assign it to the app.DB field.
-	app.DB = conn
+	app.DB = &dbrepo.PostgresDBRepo{DB: conn}
 
-	// Close the database connection when the application exits.
-	defer func(DB *sql.DB) {
-		err = DB.Close()
+	defer func(connection *sql.DB) {
+		err = connection.Close()
 		if err != nil {
-			log.Fatal(fmt.Sprintf("Error closing DB connection: %v\n", err))
+			log.Fatal(fmt.Sprintf("Error closing DB: %v\n", err))
 		}
-	}(app.DB)
-
-	if err != nil {
-		log.Fatal(fmt.Sprintf("Error connecting to database: %v\n", err))
-	}
+	}(app.DB.Connection())
 
 	app.Domain = "example.com"
 
