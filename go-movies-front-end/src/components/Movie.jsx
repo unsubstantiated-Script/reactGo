@@ -10,19 +10,20 @@ const Movie = () => {
             let myMovie = {
                 id: 5,
                 title: "Pulp Fiction",
-                year: 1994,
+                release_date: 1994,
                 runtime: 115,
-                mpaaRating: "R",
+                mpaa_rating: "R",
                 description: "The lives of two mob hitmen, a boxer, a gangster's wife, and a pair of diner bandits intertwine in four tales of violence and redemption."
             }
             setMovie(myMovie);
         },
         [id]
     )
+
     return (
         <div>
             <h2> Movie: {movie.title}</h2>
-            <small><em>{movie.year}, {movie.runtime} minutes, Rated: {movie.mpaaRating}</em></small>
+            <small><em>{movie.release_date}, {movie.runtime} minutes, Rated: {movie.mpaa_rating}</em></small>
             <hr/>
             <p>{movie.description}</p>
         </div>

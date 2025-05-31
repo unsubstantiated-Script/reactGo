@@ -1,6 +1,13 @@
 Next Release
 -
 
+v1.4.0
+* Docker build and run instructions
+* PostgresSQL database driver
+* PostgresSLQ database connection
+* DB Repository for movies
+* Handler now uses DB Repository
+
 1.3.0
 * GoLang Middleware for CORS
 * GoLang API first endpoint for movies
