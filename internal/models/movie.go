@@ -5,7 +5,6 @@ import "time"
 type Movie struct {
 	ID          int       `json:"id"`
 	Title       string    `json:"title"`
-	Year        int       `json:"year"`
 	ReleaseDate time.Time `json:"release_date"`
 	RunTime     int       `json:"runtime"`
 	MPAARating  string    `json:"mpaa_rating"`
