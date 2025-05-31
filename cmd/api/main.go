@@ -35,11 +35,22 @@ func main() {
 	flag.StringVar(&app.DSN, "dsn", dsn, "Postgres connection string")
 	flag.Parse()
 
-	// connect to DB	// connect to DB
+	// connect to DB
 	conn, err := app.connectToDB()
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Error reading DSN: %v\n", err))
+	}
 
 	// If the connection is successful, assign it to the app.DB field.
 	app.DB = conn
+
+	// Close the database connection when the application exits.
+	defer func(DB *sql.DB) {
+		err = DB.Close()
+		if err != nil {
+			log.Fatal(fmt.Sprintf("Error closing DB connection: %v\n", err))
+		}
+	}(app.DB)
 
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Error connecting to database: %v\n", err))
