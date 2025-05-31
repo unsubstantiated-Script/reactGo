@@ -1,5 +1,7 @@
 Next Release
 -
+
+1.3.0
 * GoLang Middleware for CORS
 * GoLang API first endpoint for movies
 
