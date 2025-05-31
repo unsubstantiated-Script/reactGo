@@ -23,8 +23,6 @@ func main() {
 
 	log.Printf("Starting server on port %d", port)
 
-	http.HandleFunc("/", Hello)
-
 	// Starting up; the server.
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), app.routes())
 	if err != nil {
