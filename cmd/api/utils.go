@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
 	"net/http"
 )
 
@@ -32,4 +34,43 @@ func (app *application) writeJSON(w http.ResponseWriter, status int, data interf
 	}
 
 	return nil
+}
+
+// TODO: implement this method later.
+func (app *application) readJSON(w http.ResponseWriter, r *http.Request, data interface{}) error {
+	// Limit the size of the request body to a maximum of 1 MB.
+	maxBytes := 1024 * 1024 // 1 MB
+	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
+
+	dec := json.NewDecoder(r.Body)
+
+	// Decode the JSON into the provided data structure. Refusing anything that is not expected.
+	dec.DisallowUnknownFields()
+
+	err := dec.Decode(data)
+	if err != nil {
+		return err
+	}
+
+	err = dec.Decode(&struct{}{})
+
+	// This checks if there is any trailing data in the request body after decoding the expected JSON.
+	if err != io.EOF {
+		return errors.New("body must only contain a single JSON value")
+	}
+	return nil
+}
+
+func (app *application) errorJSON(w http.ResponseWriter, err error, status ...int) error {
+	statusCode := http.StatusBadRequest
+
+	if len(status) > 0 {
+		statusCode = status[0]
+	}
+
+	var payLoad JSONResponse
+	payLoad.Error = true
+	payLoad.Message = err.Error()
+
+	return app.writeJSON(w, statusCode, payLoad)
 }
