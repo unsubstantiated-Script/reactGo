@@ -1,5 +1,8 @@
 Next Release
 -
+* Utils for Writing JSON to HTTP Response
+* Utils for Reading JSON from HTTP Request
+* Utils for Error Handling JSON Responses
 
 v1.4.0
 * Docker build and run instructions
