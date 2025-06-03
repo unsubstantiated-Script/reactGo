@@ -35,6 +35,19 @@ func (app *application) AllMovies(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) Authenticate(w http.ResponseWriter, r *http.Request) {
 	// Read the json body from the request
+	var requestPayload struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	err := app.readJSON(w, r, &requestPayload)
+	if err != nil {
+		err = app.errorJSON(w, err, http.StatusBadRequest)
+		if err != nil {
+			return
+		}
+		return
+	}
 
 	// Validate the user credentials
 
@@ -60,7 +73,7 @@ func (app *application) Authenticate(w http.ResponseWriter, r *http.Request) {
 	log.Println(tokens.Token)
 
 	refreshCookie := app.auth.GetRefreshCookie(tokens.RefreshToken)
-	
+
 	// Set the refresh token cookie in the response
 	http.SetCookie(w, refreshCookie)
 
