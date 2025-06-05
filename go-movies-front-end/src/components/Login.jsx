@@ -12,20 +12,41 @@ const Login = () => {
 
     const navigate = useNavigate();
 
-    const handleSubmit = (event) => {
+    const handleSubmit =  (event) => {
         event.preventDefault();
-        console.log("email/pass", email, password)
 
-        if (email === "admin@test.com") {
-            setJwtToken("abc")
-            setAlertClassName('d-none')
-            setAlertMessage("")
-            navigate('/')
-        } else {
-            setAlertClassName('alert alert-danger')
-            setAlertMessage("Invalid email or password")
+        // Build request payload
+
+        let payload = {
+            email: email,
+            password: password
         }
 
+        const requestOptions = {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'include',
+            body: JSON.stringify(payload)
+        }
+
+         fetch(`/authenticate`, requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                if (data.error) {
+                    setAlertClassName("alert-danger")
+                    setAlertMessage(data.message)
+                } else {
+                    setJwtToken(data.access_token)
+                    setAlertClassName("d-none")
+                    setAlertMessage("")
+                    navigate("/")
+                }
+            })
+            .catch(error => {
+                setAlertClassName("alert-danger")
+                setAlertMessage(error)
+            });
     }
 
     // noinspection JSValidateTypes
