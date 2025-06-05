@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log"
 	"net/http"
 )
 
@@ -61,12 +60,20 @@ func (app *application) Authenticate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check Password
+	valid, err := user.PasswordMatches(requestPayload.Password)
+	if err != nil || !valid {
+		err = app.errorJSON(w, errors.New("invalid credentials"), http.StatusBadRequest)
+		if err != nil {
+			return
+		}
+		return
+	}
 
 	// Generate JWT user
 	u := jwtUser{
-		ID:        1,      // This should be replaced with the actual user ID from the database
-		FirstName: "John", // Replace with actual first name
-		LastName:  "Doe",  // Replace with actual last name
+		ID:        user.ID,        // This should be replaced with the actual user ID from the database
+		FirstName: user.FirstName, // Replace with actual first name
+		LastName:  user.LastName,  // Replace with actual last name
 	}
 
 	// Generate token pair
@@ -79,15 +86,13 @@ func (app *application) Authenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println(tokens.Token)
-
 	refreshCookie := app.auth.GetRefreshCookie(tokens.RefreshToken)
 
 	// Set the refresh token cookie in the response
 	http.SetCookie(w, refreshCookie)
 
 	// Write the token pair to the response
-	_, err = w.Write([]byte(tokens.Token))
+	err = app.writeJSON(w, http.StatusAccepted, tokens)
 	if err != nil {
 		return
 	}
