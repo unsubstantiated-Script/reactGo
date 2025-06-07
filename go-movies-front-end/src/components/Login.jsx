@@ -9,10 +9,11 @@ const Login = () => {
     const {setJwtToken} = useOutletContext();
     const {setAlertMessage} = useOutletContext();
     const {setAlertClassName} = useOutletContext();
+    const {toggleRefresh} = useOutletContext();
 
     const navigate = useNavigate();
 
-    const handleSubmit =  (event) => {
+    const handleSubmit = (event) => {
         event.preventDefault();
 
         // Build request payload
@@ -29,7 +30,7 @@ const Login = () => {
             body: JSON.stringify(payload)
         }
 
-         fetch(`/authenticate`, requestOptions)
+        fetch(`/authenticate`, requestOptions)
             .then(response => response.json())
             .then(data => {
                 console.log(data)
@@ -40,6 +41,7 @@ const Login = () => {
                     setJwtToken(data.access_token)
                     setAlertClassName("d-none")
                     setAlertMessage("")
+                    toggleRefresh(true)
                     navigate("/")
                 }
             })
