@@ -1,5 +1,6 @@
 Next Release
 -
+v1.6.0
 * Installing JWT Library
 * Generating JWT Token
 * Initial handlers
