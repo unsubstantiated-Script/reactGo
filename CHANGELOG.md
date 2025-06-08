@@ -1,5 +1,15 @@
 Next Release
 -
+v1.6.0
+* Installing JWT Library
+* Generating JWT Token
+* Initial handlers
+* Refresh Token Cookie
+* Lookup by email and validating
+* Wire up JWT in the handler
+* Protecting routes with JWT
+* Adding JWT to the routes
+
 
 v1.5.0
 

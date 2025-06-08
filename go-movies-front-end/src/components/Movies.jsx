@@ -24,7 +24,7 @@ const Movies = () => {
             });
 
     }, []);
-    console.log(movies)
+
     return (
         <div>
             <h2> Movies </h2>
