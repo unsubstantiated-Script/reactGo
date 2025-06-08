@@ -16,3 +16,17 @@ func (app *application) enableCORS(h http.Handler) http.Handler {
 		}
 	})
 }
+
+func (app *application) authRequired(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check for a valid token in the request header.
+		_, _, err := app.auth.GetTokenFromHeaderAndVerify(w, r)
+		if err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		// If the token is valid, call the next handler in the chain.
+		next.ServeHTTP(w, r)
+	})
+}
