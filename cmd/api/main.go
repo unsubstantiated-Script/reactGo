@@ -10,14 +10,20 @@ import (
 	"os"
 	"reactGo/internal/repository"
 	"reactGo/internal/repository/dbrepo"
+	"time"
 )
 
 const port = 8080
 
 type application struct {
-	DSN    string
-	Domain string
-	DB     repository.DatabaseRepo
+	DSN          string
+	Domain       string
+	DB           repository.DatabaseRepo
+	auth         Auth
+	JWTSecret    string
+	JWTIssuer    string
+	JWTAudience  string
+	CookieDomain string
 }
 
 func main() {
@@ -33,8 +39,15 @@ func main() {
 		os.Getenv("DB_NAME"),
 	)
 
+	jwtSecret := os.Getenv("JWT_SECRET")
+
 	// read from  CLI
 	flag.StringVar(&app.DSN, "dsn", dsn, "Postgres connection string")
+	flag.StringVar(&app.JWTSecret, "jwt-secret", jwtSecret, "signing secret for JWT")
+	flag.StringVar(&app.JWTIssuer, "jwt-issuer", "example.com", "signing issuer for JWT")
+	flag.StringVar(&app.JWTAudience, "jwt-audience", "example.com", "signing audience for JWT")
+	flag.StringVar(&app.CookieDomain, "cookie-domain", "localhost", "cookie domain for JWT")
+	flag.StringVar(&app.Domain, "domain", "example.com", "domain for JWT")
 	flag.Parse()
 
 	// connect to DB
@@ -53,7 +66,16 @@ func main() {
 		}
 	}(app.DB.Connection())
 
-	app.Domain = "example.com"
+	app.auth = Auth{
+		Issuer:        app.JWTIssuer,
+		Audience:      app.JWTAudience,
+		Secret:        app.JWTSecret,
+		TokenExpiry:   15 * time.Minute, // 15 minutes
+		RefreshExpiry: 24 * time.Hour,   // 24 hours
+		CookieDomain:  app.CookieDomain,
+		CookiePath:    "/",
+		CookieName:    "host-refresh_token",
+	}
 
 	log.Printf("Starting server on port %d", port)
 
