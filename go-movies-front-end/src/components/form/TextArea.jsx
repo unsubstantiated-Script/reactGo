@@ -16,3 +16,5 @@ const TextArea = (props) => {
         </div>
     )
 }
+
+export default TextArea;
