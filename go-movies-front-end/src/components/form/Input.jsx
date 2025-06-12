@@ -16,7 +16,7 @@ const Input = forwardRef((props, ref) => {
                 value={props.value}
             />
             <div className={props.errorDiv}>
-                {props.errorMsg}
+                {props.errorMessage}
             </div>
         </div>
     )

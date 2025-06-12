@@ -11,7 +11,7 @@ const TextArea = (props) => {
                 rows={props.rows || 3}
             />
             <div className={props.errorDiv}>
-                {props.errorMsg}
+                {props.errorMessage}
             </div>
         </div>
     )

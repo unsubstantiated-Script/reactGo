@@ -17,7 +17,7 @@ const Select = (props) => {
                     </option>
                 ))}
             </select>
-            <div className={props.errorDiv}>{props.errorMsg}</div>
+            <div className={props.errorDiv}>{props.errorMessage}</div>
         </div>
     );
 }
