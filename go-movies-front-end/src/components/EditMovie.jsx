@@ -4,6 +4,7 @@ import {useEffect, useState} from "react";
 import Select from "./form/Select";
 import TextArea from "./form/TextArea";
 import Checkbox from "./form/Checkbox";
+import Swal from "sweetalert2";
 
 const EditMovie = () => {
     const navigate = useNavigate()
@@ -112,7 +113,7 @@ const EditMovie = () => {
     const handleCheck = (e, index) => {
         // Clone genres array and update checked state
         const newGenres = movie.genres.map((g, i) =>
-            i === index ? { ...g, checked: !g.checked } : g
+            i === index ? {...g, checked: !g.checked} : g
         );
 
         // Clone genres_array and update IDs
@@ -133,13 +134,46 @@ const EditMovie = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
         // Handle form submission logic here
+        let errors = [];
+        let required = [
+            {field: movie.title, name: "title"},
+            {field: movie.release_date, name: "release_date"},
+            {field: movie.runtime, name: "runtime"},
+            {field: movie.description, name: "description"},
+            {field: movie.mpaa_rating, name: "mpaa_rating"},
+        ]
+
+        required.forEach(function (obj) {
+            if (obj.field === "") {
+                errors.push(obj.name)
+            }
+        })
+
+        if (movie.genres_array.length === 0) {
+            Swal.fire({
+                title: "Error",
+                text: "Please select at least one genre.",
+                icon: "error",
+                confirmButtonText: "OK"
+            })
+            errors.push("genres")
+        }
+
+        setErrors(errors)
+
+        if (errors.length > 0) {
+            return false;
+        }
+
     }
 
-    return (<div>
+    return (
+        <div className="container mb-5">
         <h2> Add/Edit Movie </h2>
         <hr/>
-        <pre>{JSON.stringify(movie, null, 3)}</pre>
+        {/*<pre>{JSON.stringify(movie, null, 3)}</pre>*/}
         <form onSubmit={handleSubmit}>
             <input type="hidden" name="id" value={movie.id} id="id"/>
 
@@ -215,8 +249,8 @@ const EditMovie = () => {
                     )}
                 </>
             }
-
-
+            <hr/>
+            <button className="btn btn-lg btn-primary">Save Movie</button>
         </form>
     </div>)
 }
