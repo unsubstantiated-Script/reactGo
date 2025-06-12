@@ -1,9 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v4"
+	"io"
+	"log"
 	"net/http"
 	"reactGo/internal/models"
 	"strconv"
@@ -235,4 +239,53 @@ func (app *application) AllGenres(w http.ResponseWriter, r *http.Request) {
 
 	_ = app.writeJSON(w, http.StatusOK, genres)
 
+}
+func (app *application) getPoster(movie models.Movie) models.Movie {
+	type TheMovieDB struct {
+		Page    int `json:"page"`
+		Results []struct {
+			PosterPath string `json:"poster_path"`
+		} `json:"results"`
+		TotalPages int `json:"total_pages"`
+	}
+
+	client := &http.Client{}
+	theUrl := fmt.Sprintf("https://api.themoviedb.org/3/search/movie?api_key=%s&query=%s", app.APIKey, movie.Title)
+
+	req, err := http.NewRequest("GET", theUrl, nil)
+	if err != nil {
+		log.Println(err)
+		return movie
+	}
+
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+		return movie
+	}
+
+	defer resp.Body.Close()
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err)
+		return movie
+	}
+
+	var responseObj TheMovieDB
+
+	err = json.Unmarshal(bodyBytes, &responseObj)
+	if err != nil {
+		return models.Movie{}
+	}
+
+	// If there are results, set the movie image to the first result's poster path
+	if len(responseObj.Results) > 0 {
+		movie.Image = responseObj.Results[0].PosterPath
+	}
+
+	return movie
 }
