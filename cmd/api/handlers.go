@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"reactGo/internal/models"
 	"strconv"
 )
@@ -254,7 +255,25 @@ func (app *application) InsertMovie(w http.ResponseWriter, r *http.Request) {
 	}
 
 	movie = app.getPoster(movie)
-	
+
+	newID, err := app.DB.InsertMovie(&movie)
+	if err != nil {
+		err = app.errorJSON(w, err)
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	err = app.DB.UpdateMovieGenres(newID, movie.GenresArray)
+	if err != nil {
+		err = app.errorJSON(w, err)
+		if err != nil {
+			return
+		}
+		return
+	}
+
 	resp := JSONResponse{
 		Error:   false,
 		Message: "Movie updated",
@@ -272,8 +291,7 @@ func (app *application) getPoster(movie models.Movie) models.Movie {
 	}
 
 	client := &http.Client{}
-	theUrl := fmt.Sprintf("https://api.themoviedb.org/3/search/movie?api_key=%s&query=%s", app.APIKey, movie.Title)
-
+	theUrl := fmt.Sprintf("https://api.themoviedb.org/3/search/movie?api_key=%s&query=%s", app.APIKey, url.QueryEscape(movie.Title))
 	req, err := http.NewRequest("GET", theUrl, nil)
 	if err != nil {
 		log.Println(err)

@@ -41,7 +41,7 @@ func main() {
 	)
 
 	jwtSecret := os.Getenv("JWT_SECRET")
-	apiKey := os.Getenv("API_KEY")
+	apiKey := os.Getenv("API_KEY_MOVIES")
 
 	// read from  CLI
 	flag.StringVar(&app.DSN, "dsn", dsn, "Postgres connection string")

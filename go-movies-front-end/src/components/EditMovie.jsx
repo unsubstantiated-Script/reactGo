@@ -167,6 +167,46 @@ const EditMovie = () => {
             return false;
         }
 
+        // Passed validation, proceed with submission
+        const headers = new Headers();
+        headers.append("Content-Type", "application/json");
+        headers.append("Authorization", `Bearer ${jwtToken}`);
+
+        // assume we are adding a new movie
+        let method = 'PUT';
+
+        if (movie.id > 0) {
+            // editing an existing movie
+            method = 'PATCH';
+        }
+
+        const requestBody = movie;
+
+        requestBody.release_date = new Date(movie.release_date)
+        requestBody.runtime = parseInt(movie.runtime, 10);
+
+
+        let requestOptions = {
+            body: JSON.stringify(requestBody),
+            method: method,
+            headers: headers,
+            credentials: 'include',
+        }
+
+        fetch(`/admin/movies/${movie.id}`, requestOptions)
+            .then(response => response.json())
+            .then((data) => {
+                if (data.error) {
+                   console.log(data.error)
+                } else {
+                    navigate("/manage-catalogue")
+                }
+            })
+            .catch(err => {
+                console.log(err)
+            })
+
+
     }
 
     return (
