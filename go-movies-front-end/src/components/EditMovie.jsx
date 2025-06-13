@@ -95,9 +95,53 @@ const EditMovie = () => {
 
         } else {
             // editing a movie
+            const headers = new Headers();
+            headers.append("Content-Type", "application/json");
+            headers.append("Authorization", `Bearer ${jwtToken}`);
+
+            const requestOptions = {
+                method: 'GET',
+                headers: headers,
+            }
+
+            fetch(`/admin/movies/${id}`, requestOptions)
+                .then((response) => {
+                    if (response.status !== 200) {
+                        setError("invalid response code: " + response.status);
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    // fix the release date
+                    data.movie.release_date = new Date(data.movie.release_date).toISOString().split('T')[0];
+
+                    const checks = []
+
+                    data.genres.forEach(g => {
+                        if (data.movie.genres_array.indexOf(g.id) !== -1) {
+                            checks.push({
+                                id: g.id,
+                                checked: true,
+                                genre: g.genre,
+                            })
+                        } else {
+                            checks.push({
+                                id: g.id,
+                                checked: false,
+                                genre: g.genre,
+                            })
+                        }
+                    })
+                    // Set state
+                    setMovie({
+                        ...data.movie,
+                        genres: checks,
+                    })
+                })
+                .catch(err => {
+                    console.error("Error fetching movie data:", err);
+                });
         }
-
-
     }, [id, jwtToken, navigate])
 
 
@@ -197,7 +241,7 @@ const EditMovie = () => {
             .then(response => response.json())
             .then((data) => {
                 if (data.error) {
-                   console.log(data.error)
+                    console.log(data.error)
                 } else {
                     navigate("/manage-catalogue")
                 }
@@ -211,88 +255,88 @@ const EditMovie = () => {
 
     return (
         <div className="container mb-5">
-        <h2> Add/Edit Movie </h2>
-        <hr/>
-        {/*<pre>{JSON.stringify(movie, null, 3)}</pre>*/}
-        <form onSubmit={handleSubmit}>
-            <input type="hidden" name="id" value={movie.id} id="id"/>
-
-            <Input
-                title={"Title"}
-                className={"form-control"}
-                type={"text"}
-                name={"title"}
-                value={movie.title}
-                onChange={handleChange("title")}
-                errorDiv={hasError("title") ? "text-danger" : "d-none"}
-                errorMessage={"Please enter a title."}
-            />
-
-            <Input
-                title={"Release Date"}
-                className={"form-control"}
-                type={"date"}
-                name={"release_date"}
-                value={movie.release_date}
-                onChange={handleChange("release_date")}
-                errorDiv={hasError("release_date") ? "text-danger" : "d-none"}
-                errorMessage={"Please enter a release date."}
-            />
-
-            <Input
-                title={"Run Time"}
-                className={"form-control"}
-                type={"text"}
-                name={"runtime"}
-                value={movie.runtime}
-                onChange={handleChange("runtime")}
-                errorDiv={hasError("runtime") ? "text-danger" : "d-none"}
-                errorMessage={"Please enter a run time."}
-            />
-
-            <Select
-                title={"MPAA Rating"}
-                name={"mpaa_rating"}
-                onChange={handleChange("mpaa_rating")}
-                options={mpaaOptions}
-                placeholder={"Select MPAA Rating"}
-                errorDiv={hasError("mpaa_rating") ? "text-danger" : "d-none"}
-                errorMessage={"Please select an MPAA rating."}
-            />
-
-            <TextArea
-                title={"Description"}
-                name={"description"}
-                value={movie.description}
-                rows={3}
-                onChange={handleChange("description")}
-                errorDiv={hasError("description") ? "text-danger" : "d-none"}
-                errorMessage={"Please enter a description."}
-            />
+            <h2> Add/Edit Movie </h2>
             <hr/>
-            <h3>Genres</h3>
+            {/*<pre>{JSON.stringify(movie, null, 3)}</pre>*/}
+            <form onSubmit={handleSubmit}>
+                <input type="hidden" name="id" value={movie.id} id="id"/>
 
-            {movie.genres && movie.genres.length > 1 &&
-                <>
-                    {Array.from(movie.genres).map((g, index) =>
-                        <Checkbox
-                            key={index}
-                            title={g.genre}
-                            name={`genre`}
-                            id={`genre-${index}`}
-                            onChange={(e) => {
-                                handleCheck(e, index)
-                            }}
-                            value={g.id}
-                            checked={movie.genres[index].checked}
-                        />
-                    )}
-                </>
-            }
-            <hr/>
-            <button className="btn btn-lg btn-primary">Save Movie</button>
-        </form>
-    </div>)
+                <Input
+                    title={"Title"}
+                    className={"form-control"}
+                    type={"text"}
+                    name={"title"}
+                    value={movie.title}
+                    onChange={handleChange("title")}
+                    errorDiv={hasError("title") ? "text-danger" : "d-none"}
+                    errorMessage={"Please enter a title."}
+                />
+
+                <Input
+                    title={"Release Date"}
+                    className={"form-control"}
+                    type={"date"}
+                    name={"release_date"}
+                    value={movie.release_date}
+                    onChange={handleChange("release_date")}
+                    errorDiv={hasError("release_date") ? "text-danger" : "d-none"}
+                    errorMessage={"Please enter a release date."}
+                />
+
+                <Input
+                    title={"Run Time"}
+                    className={"form-control"}
+                    type={"text"}
+                    name={"runtime"}
+                    value={movie.runtime}
+                    onChange={handleChange("runtime")}
+                    errorDiv={hasError("runtime") ? "text-danger" : "d-none"}
+                    errorMessage={"Please enter a run time."}
+                />
+
+                <Select
+                    title={"MPAA Rating"}
+                    name={"mpaa_rating"}
+                    onChange={handleChange("mpaa_rating")}
+                    options={mpaaOptions}
+                    placeholder={"Select MPAA Rating"}
+                    errorDiv={hasError("mpaa_rating") ? "text-danger" : "d-none"}
+                    errorMessage={"Please select an MPAA rating."}
+                />
+
+                <TextArea
+                    title={"Description"}
+                    name={"description"}
+                    value={movie.description}
+                    rows={3}
+                    onChange={handleChange("description")}
+                    errorDiv={hasError("description") ? "text-danger" : "d-none"}
+                    errorMessage={"Please enter a description."}
+                />
+                <hr/>
+                <h3>Genres</h3>
+
+                {movie.genres && movie.genres.length > 1 &&
+                    <>
+                        {Array.from(movie.genres).map((g, index) =>
+                            <Checkbox
+                                key={index}
+                                title={g.genre}
+                                name={`genre`}
+                                id={`genre-${index}`}
+                                onChange={(e) => {
+                                    handleCheck(e, index)
+                                }}
+                                value={g.id}
+                                checked={movie.genres[index].checked}
+                            />
+                        )}
+                    </>
+                }
+                <hr/>
+                <button className="btn btn-lg btn-primary">Save Movie</button>
+            </form>
+        </div>)
 }
 
 export default EditMovie;

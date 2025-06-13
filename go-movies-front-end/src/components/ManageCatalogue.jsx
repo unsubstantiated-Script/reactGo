@@ -52,7 +52,7 @@ const ManageCatalogue = () => {
 
                     <tr key={movie.id}>
                         <td>
-                            <Link to={`/admin/movies/${movie.id}`}>
+                            <Link to={`/admin/movie/${movie.id}`}>
                                 {movie.title}
                             </Link>
                         </td>
