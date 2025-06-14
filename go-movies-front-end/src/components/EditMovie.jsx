@@ -299,6 +299,7 @@ const EditMovie = () => {
                     name={"mpaa_rating"}
                     onChange={handleChange("mpaa_rating")}
                     options={mpaaOptions}
+                    value={movie.mpaa_rating}
                     placeholder={"Select MPAA Rating"}
                     errorDiv={hasError("mpaa_rating") ? "text-danger" : "d-none"}
                     errorMessage={"Please select an MPAA rating."}
