@@ -1,25 +1,20 @@
-import {forwardRef} from "react";
-
-const Input = forwardRef((props, ref) => {
+const TextArea = (props) => {
     return (
         <div className="mb-3">
             <label htmlFor={props.name} className="form-label">{props.title}</label>
-            <input
-                type={props.type}
-                className={props.className}
+            <textarea
+                className="form-control"
                 id={props.name}
                 name={props.name}
-                ref={ref}
-                placeholder={props.placeholder}
                 onChange={props.onChange}
-                autoComplete={props.autoComplete}
                 value={props.value}
+                rows={props.rows || 3}
             />
             <div className={props.errorDiv}>
                 {props.errorMessage}
             </div>
         </div>
     )
-})
+}
 
-export default Input;
+export default TextArea;
