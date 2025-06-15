@@ -1,6 +1,7 @@
 Next Release
 -
 
+v1.7.0
 * Create a new movie
 * Routing to Movie Management
 * Add Movie Form
