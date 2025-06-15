@@ -283,7 +283,7 @@ const EditMovie = () => {
                         if (data.error) {
                             console.log(data.error)
                         } else {
-                            navitate("/manage-catalogue")
+                            navigate("/manage-catalogue")
                         }
                     })
                     .catch(err => {
