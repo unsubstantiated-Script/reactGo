@@ -67,6 +67,144 @@ func (m *PostgresDBRepo) AllMovies() ([]*models.Movie, error) {
 	return movies, nil
 }
 
+func (m *PostgresDBRepo) OneMovie(id int) (*models.Movie, error) {
+	// This will timeout if the query takes longer than dbTimeout
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	// Coalesce is used to return an empty string if the image is NULL
+	query := `SELECT id, title, release_date, runtime, mpaa_rating, description, coalesce(image, ''), created_at, updated_at FROM movies where id = $1`
+
+	row := m.DB.QueryRowContext(ctx, query, id)
+
+	var movie models.Movie
+	err := row.Scan(
+		&movie.ID,
+		&movie.Title,
+		&movie.ReleaseDate,
+		&movie.RunTime,
+		&movie.MPAARating,
+		&movie.Description,
+		&movie.Image,
+		&movie.CreatedAt,
+		&movie.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// get genre for the movie
+	query = `SELECT g.id, g.genre FROM movies_genres mg
+LEFT JOIN genres g ON mg.genre_id = g.id
+WHERE mg.movie_id = $1
+ORDER BY g.genre ASC`
+
+	rows, err := m.DB.QueryContext(ctx, query, id)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var genres []*models.Genre
+	for rows.Next() {
+		var g models.Genre
+		err = rows.Scan(&g.ID, &g.Genre)
+		if err != nil {
+			return nil, err
+		}
+
+		genres = append(genres, &g)
+	}
+
+	movie.Genres = genres
+
+	return &movie, nil
+}
+
+func (m *PostgresDBRepo) OneMovieForEdit(id int) (*models.Movie, []*models.Genre, error) {
+	// This will timeout if the query takes longer than dbTimeout
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	// Coalesce is used to return an empty string if the image is NULL
+	query := `SELECT id, title, release_date, runtime, mpaa_rating, description, coalesce(image, ''), created_at, updated_at FROM movies where id = $1`
+
+	row := m.DB.QueryRowContext(ctx, query, id)
+
+	var movie models.Movie
+	err := row.Scan(
+		&movie.ID,
+		&movie.Title,
+		&movie.ReleaseDate,
+		&movie.RunTime,
+		&movie.MPAARating,
+		&movie.Description,
+		&movie.Image,
+		&movie.CreatedAt,
+		&movie.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// get genre for the movie
+	query = `SELECT g.id, g.genre FROM movies_genres mg
+LEFT JOIN genres g ON mg.genre_id = g.id
+WHERE mg.movie_id = $1
+ORDER BY g.genre ASC`
+
+	rows, err := m.DB.QueryContext(ctx, query, id)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, nil, err
+	}
+
+	var genres []*models.Genre
+
+	var genresArray []int
+
+	// Fetch genres for the movie
+	for rows.Next() {
+		var g models.Genre
+		err = rows.Scan(&g.ID, &g.Genre)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		genres = append(genres, &g)
+		genresArray = append(genresArray, g.ID)
+	}
+
+	movie.Genres = genres
+	movie.GenresArray = genresArray
+
+	// Fetch all genres for the dropdown
+	var allGenres []*models.Genre
+
+	query = `SELECT id, genre FROM genres ORDER BY genre ASC`
+
+	gRows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	defer gRows.Close()
+
+	for gRows.Next() {
+		var g models.Genre
+		err = gRows.Scan(&g.ID, &g.Genre)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		allGenres = append(allGenres, &g)
+	}
+
+	return &movie, allGenres, nil
+}
+
 func (m *PostgresDBRepo) GetUserByEmail(email string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
@@ -119,4 +257,118 @@ func (m *PostgresDBRepo) GetUserByID(id int) (*models.User, error) {
 	}
 
 	return &user, nil
+}
+
+func (m *PostgresDBRepo) AllGenres() ([]*models.Genre, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	query := `SELECT id, genre, created_at, updated_at FROM genres ORDER BY genre ASC`
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var genres []*models.Genre
+
+	for rows.Next() {
+		var g models.Genre
+		err = rows.Scan(&g.ID, &g.Genre, &g.CreatedAt, &g.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		genres = append(genres, &g)
+	}
+
+	return genres, nil
+}
+
+func (m *PostgresDBRepo) InsertMovie(movie *models.Movie) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	query := `INSERT INTO movies (title, release_date,  runtime, mpaa_rating, description, image, created_at, updated_at) 
+		  VALUES ($1, $2, $3, $4, $5, $6, now(), now()) RETURNING id`
+
+	var newID int
+	err := m.DB.QueryRowContext(ctx, query,
+		movie.Title,
+		movie.ReleaseDate,
+		movie.RunTime,
+		movie.MPAARating,
+		movie.Description,
+		movie.Image,
+	).Scan(&newID)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return newID, nil
+}
+
+func (m *PostgresDBRepo) UpdateMovie(movie *models.Movie) error {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	query := `UPDATE movies 
+		  SET title = $1, description = $2, release_date = $3, runtime = $4, mpaa_rating = $5,  updated_at = now(), image = $6
+		  WHERE id = $7`
+
+	_, err := m.DB.ExecContext(ctx, query,
+		movie.Title,
+		movie.Description,
+		movie.ReleaseDate,
+		movie.RunTime,
+		movie.MPAARating,
+		movie.Image,
+		movie.ID,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PostgresDBRepo) UpdateMovieGenres(id int, genreIDs []int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	// First, delete existing genres for the movie
+	query := `DELETE FROM movies_genres WHERE movie_id = $1`
+	_, err := m.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	// Then, insert the new genres
+	for _, genreID := range genreIDs {
+		query = `INSERT INTO movies_genres (movie_id, genre_id) VALUES ($1, $2)`
+		_, err := m.DB.ExecContext(ctx, query, id, genreID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PostgresDBRepo) DeleteMovie(id int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	query := `DELETE FROM movies WHERE id = $1`
+
+	_, err := m.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

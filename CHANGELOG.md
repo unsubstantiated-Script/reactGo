@@ -1,5 +1,25 @@
 Next Release
 -
+
+v1.7.0
+* Create a new movie
+* Routing to Movie Management
+* Add Movie Form
+* Add Movie Form Validation
+* Add Movie Form Submission
+* Add Movie Form Submission Error Handling
+* Add Movie Form Success Handling
+* Add Movie Form Success Redirect
+* Update Movie Form
+* Update Movie Form Validation
+* Update Movie Form Submission
+* Update Movie Form Submission Error Handling
+* Delete Movie Form
+* Delete Movie Form Submission
+* Delete Movie Form Submission Error Handling
+* Delete Movie Form Success Handling
+* Delete Movie Form Success Redirect
+
 v1.6.0
 * Installing JWT Library
 * Generating JWT Token
