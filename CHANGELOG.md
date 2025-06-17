@@ -1,5 +1,7 @@
 Next Release
 -
+
+v 1.8.0
 * Genre Management
 * Genre Table
 * Genre Rendering
