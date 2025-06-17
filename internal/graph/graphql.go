@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"errors"
 	"github.com/graphql-go/graphql"
 	"reactGo/internal/models"
 	"strings"
@@ -14,7 +15,10 @@ type Graph struct {
 	movieType   *graphql.Object
 }
 
+// New creates a new GraphQL schema with the provided movies. It's a factory function that initializes the Graph struct with the necessary fields and types for the GraphQL schema.
 func New(movies []*models.Movie) *Graph {
+
+	// Define the movie type with its fields
 	var movieType = graphql.NewObject(graphql.ObjectConfig{
 		Name: "Movie",
 		Fields: graphql.Fields{
@@ -48,6 +52,7 @@ func New(movies []*models.Movie) *Graph {
 		},
 	})
 
+	// Define the root query type with its fields
 	var fields = graphql.Fields{
 		"list": &graphql.Field{
 			Type:        graphql.NewList(movieType),
@@ -100,9 +105,28 @@ func New(movies []*models.Movie) *Graph {
 		},
 	}
 
+	// Return a pointer to the Graph struct with the initialized fields and movie type
 	return &Graph{
 		Movies:    movies,
 		fields:    fields,
 		movieType: movieType,
 	}
+}
+
+// Query Schema returns the GraphQL schema for the Graph struct. It constructs the schema using the defined fields and movie type.
+func (g *Graph) Query() (*graphql.Result, error) {
+	rootQuery := graphql.ObjectConfig{Name: "RootQuery", Fields: g.fields}
+	schemaConfig := graphql.SchemaConfig{Query: graphql.NewObject(rootQuery)}
+	schema, err := graphql.NewSchema(schemaConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	params := graphql.Params{Schema: schema, RequestString: g.QueryString}
+	resp := graphql.Do(params)
+	if len(resp.Errors) > 0 {
+		return nil, errors.New("error executing query: " + resp.Errors[0].Message)
+	}
+
+	return resp, nil
 }
