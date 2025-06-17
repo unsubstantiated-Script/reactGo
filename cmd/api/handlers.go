@@ -409,3 +409,26 @@ func (app *application) DeleteMovie(w http.ResponseWriter, r *http.Request) {
 
 	app.writeJSON(w, http.StatusAccepted, resp)
 }
+
+func (app *application) AllMoviesByGenre(w http.ResponseWriter, r *http.Request) {
+	genreID, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		err = app.errorJSON(w, err)
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	movies, err := app.DB.AllMovies(genreID)
+	if err != nil {
+		err = app.errorJSON(w, err)
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	_ = app.writeJSON(w, http.StatusOK, movies)
+
+}
