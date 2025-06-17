@@ -1,5 +1,9 @@
 Next Release
 -
+* Genre Management
+* Genre Table
+* Genre Rendering
+* Genre Single Rendering
 
 v1.7.0
 * Create a new movie
