@@ -19,14 +19,24 @@ func (m *PostgresDBRepo) Connection() *sql.DB {
 	return m.DB
 }
 
-func (m *PostgresDBRepo) AllMovies() ([]*models.Movie, error) {
+func (m *PostgresDBRepo) AllMovies(genre ...int) ([]*models.Movie, error) {
 	// This will timeout if the query takes longer than dbTimeout
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
-	query := `SELECT id, title, description, release_date, runtime, mpaa_rating, coalesce(image, ''), created_at, updated_at 
+	where := ""
+
+	if len(genre) > 0 && genre[0] > 0 {
+		where = fmt.Sprintf("WHERE id in (SELECT movie_id FROM movies_genres WHERE genre_id = %d)", genre[0])
+	}
+
+	query := fmt.Sprintf(`SELECT id, title, description, release_date, runtime, mpaa_rating, coalesce(image, ''), created_at, updated_at 
           FROM movies 
-          ORDER BY title ASC`
+          %s
+          ORDER BY 
+              title ASC
+              `, where,
+	)
 
 	rows, err := m.DB.QueryContext(ctx, query)
 	if err != nil {
@@ -315,7 +325,7 @@ func (m *PostgresDBRepo) UpdateMovie(movie *models.Movie) error {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
-	query := `UPDATE movies 
+	query := `UPDATE movies
 		  SET title = $1, description = $2, release_date = $3, runtime = $4, mpaa_rating = $5,  updated_at = now(), image = $6
 		  WHERE id = $7`
 

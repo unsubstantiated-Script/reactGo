@@ -1,6 +1,12 @@
 Next Release
 -
 
+v 1.8.0
+* Genre Management
+* Genre Table
+* Genre Rendering
+* Genre Single Rendering
+
 v1.7.0
 * Create a new movie
 * Routing to Movie Management
