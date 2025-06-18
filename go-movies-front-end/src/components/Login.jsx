@@ -33,7 +33,6 @@ const Login = () => {
         fetch(`/authenticate`, requestOptions)
             .then(response => response.json())
             .then(data => {
-                console.log(data)
                 if (data.error) {
                     setAlertClassName("alert-danger")
                     setAlertMessage(data.message)
