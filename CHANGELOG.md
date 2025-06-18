@@ -1,6 +1,7 @@
 Next Release
 -
 
+v1.9.0
 * GraphQL API for Genres
 * GraphQL API search for Movies
 
