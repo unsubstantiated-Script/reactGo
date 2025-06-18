@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"reactGo/internal/graph"
 	"reactGo/internal/models"
 	"strconv"
 )
@@ -431,4 +432,60 @@ func (app *application) AllMoviesByGenre(w http.ResponseWriter, r *http.Request)
 
 	_ = app.writeJSON(w, http.StatusOK, movies)
 
+}
+
+func (app *application) moviesGraphQL(w http.ResponseWriter, r *http.Request) {
+	// Populate graph type w/ movies
+	movies, err := app.DB.AllMovies()
+	if err != nil {
+		err = app.errorJSON(w, err)
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	// Get the query from the request
+	q, err := io.ReadAll(r.Body)
+	if err != nil {
+		err = app.errorJSON(w, err, http.StatusBadRequest)
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	query := string(q)
+
+	// create a new var of type *graph.Graph
+	g := graph.New(movies)
+
+	// set the query string on the variable
+	g.QueryString = query
+
+	// perform the query
+	resp, err := g.Query()
+	if err != nil {
+		err = app.errorJSON(w, err, http.StatusBadRequest)
+		if err != nil {
+			return
+		}
+		return
+	}
+	// send the response
+	j, err := json.MarshalIndent(resp, "", "\t")
+	if err != nil {
+		err = app.errorJSON(w, err, http.StatusInternalServerError)
+		if err != nil {
+			return
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write(j)
+	if err != nil {
+		return
+	}
 }

@@ -30,9 +30,7 @@ function App() {
     }
 
     const toggleRefresh = useCallback((status) => {
-        console.log("clicked")
         if (status) {
-            console.log("turning on ticking")
             let i = setInterval(() => {
 
                 const requestOptions = {
@@ -53,10 +51,7 @@ function App() {
             }, 600000) // 10 minutes
 
             setTickInterval(i)
-            console.log("setting tick interval to ", i)
         } else {
-            console.log("turning off ticking")
-            console.log("turning ticker interval off", tickInterval)
             setTickInterval(null)
             clearInterval(tickInterval)
         }
