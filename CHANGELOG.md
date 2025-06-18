@@ -1,6 +1,9 @@
 Next Release
 -
 
+* GraphQL API for Genres
+* GraphQL API search for Movies
+
 v 1.8.0
 * Genre Management
 * Genre Table
